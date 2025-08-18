@@ -1,14 +1,19 @@
 const chatWindow = document.getElementById("chatWindow");
 const chatForm = document.getElementById("chatForm");
 const chatInput = document.getElementById("chatInput");
+const refreshBtn = document.getElementById("refreshBtn");
+const refreshNotice = document.getElementById("refreshNotice");
 
 
-function createMessage(text, sender = "bot") {
+function createMessage(text, sender, time) {
  const msg = document.createElement("div");
  msg.classList.add("message", sender);
 
 
- const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+ const timestamp = new Date(time).toLocaleTimeString([], {
+   hour: "2-digit",
+   minute: "2-digit",
+ });
 
 
  msg.innerHTML = `
@@ -20,21 +25,58 @@ function createMessage(text, sender = "bot") {
 }
 
 
-chatForm.addEventListener("submit", function (e) {
+async function fetchMessages() {
+ refreshNotice.style.display = "inline-block";
+ chatWindow.classList.add("loading");
+
+
+ try {
+   const res = await fetch("https://ai-website-dctx.onrender.com/all-messages");
+   const data = await res.json();
+
+
+   if (data.messages) {
+     chatWindow.innerHTML = "";
+     data.messages.forEach((msg) =>
+       createMessage(msg.message, msg.user_type, msg.datetime)
+     );
+     chatWindow.scrollTop = chatWindow.scrollHeight;
+   }
+ } catch (err) {
+   console.error("Fetch failed", err);
+ } finally {
+   setTimeout(() => {
+     refreshNotice.style.display = "none";
+     chatWindow.classList.remove("loading");
+   }, 1000);
+ }
+}
+
+
+chatForm.addEventListener("submit", async function (e) {
  e.preventDefault();
  const userMsg = chatInput.value.trim();
  if (!userMsg) return;
 
 
- createMessage(userMsg, "user");
-
-
- // Simulate bot response (replace this later with API call)
- setTimeout(() => {
-   const reply = `You liked "${userMsg}"? Try watching "Interstellar" next! 🎬`;
-   createMessage(reply, "bot");
- }, 1000);
-
-
  chatInput.value = "";
+ await fetch("https://ai-website-dctx.onrender.com/send", {
+   method: "POST",
+   headers: { "Content-Type": "application/json" },
+   body: JSON.stringify({ message: userMsg }),
+ });
+
+
+ setTimeout(() => {
+   refreshBtn.click();
+ }, 1000); // 1s delay
 });
+
+
+refreshBtn.addEventListener("click", fetchMessages);
+
+
+// Initial fetch on load
+fetchMessages();
+
+
