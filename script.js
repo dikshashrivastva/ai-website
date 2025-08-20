@@ -53,6 +53,20 @@ async function fetchMessages() {
 }
 
 
+let pollInterval = null;
+
+// Poll messages every 2 seconds
+function startPolling() {
+ if (pollInterval) clearInterval(pollInterval);
+ pollInterval = setInterval(fetchMessages, 2000);
+}
+
+// Stop polling (optional, e.g. on page unload)
+function stopPolling() {
+ if (pollInterval) clearInterval(pollInterval);
+}
+
+
 chatForm.addEventListener("submit", async function (e) {
  e.preventDefault();
  const userMsg = chatInput.value.trim();
@@ -67,16 +81,19 @@ chatForm.addEventListener("submit", async function (e) {
  });
 
 
- setTimeout(() => {
-   refreshBtn.click();
- }, 1000); // 1s delay
+ // Immediately fetch new messages after sending
+ fetchMessages();
 });
 
 
 refreshBtn.addEventListener("click", fetchMessages);
 
 
-// Initial fetch on load
+// Initial fetch and start polling on load
 fetchMessages();
+startPolling();
+
+// Optional: Stop polling when page is closed
+window.addEventListener("beforeunload", stopPolling);
 
 
