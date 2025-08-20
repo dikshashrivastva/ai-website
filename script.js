@@ -31,7 +31,7 @@ async function fetchMessages() {
 
 
  try {
-   const res = await fetch("https://ai-website-dctx.onrender.com/all-messages");
+   const res = await fetch("https://website-from-0-backend.onrender.com/all-messages");
    const data = await res.json();
 
 
@@ -53,20 +53,6 @@ async function fetchMessages() {
 }
 
 
-let pollInterval = null;
-
-// Poll messages every 2 seconds
-function startPolling() {
- if (pollInterval) clearInterval(pollInterval);
- pollInterval = setInterval(fetchMessages, 2000);
-}
-
-// Stop polling (optional, e.g. on page unload)
-function stopPolling() {
- if (pollInterval) clearInterval(pollInterval);
-}
-
-
 chatForm.addEventListener("submit", async function (e) {
  e.preventDefault();
  const userMsg = chatInput.value.trim();
@@ -74,25 +60,21 @@ chatForm.addEventListener("submit", async function (e) {
 
 
  chatInput.value = "";
- await fetch("https://ai-website-dctx.onrender.com/send", {
+ await fetch("https://website-from-0-backend.onrender.com/send", {
    method: "POST",
    headers: { "Content-Type": "application/json" },
    body: JSON.stringify({ message: userMsg }),
  });
 
 
- // Immediately fetch new messages after sending
- fetchMessages();
+ setTimeout(() => {
+   refreshBtn.click();
+ }, 1000); // 1s delay
 });
 
 
 refreshBtn.addEventListener("click", fetchMessages);
 
 
-// Initial fetch and start polling on load
+// Initial fetch on load
 fetchMessages();
-
-// Optional: Stop polling when page is closed
-window.addEventListener("beforeunload", stopPolling);
-
-
