@@ -91,7 +91,6 @@ refreshBtn.addEventListener("click", fetchMessages);
 
 // Initial fetch and start polling on load
 fetchMessages();
-startPolling();
 
 // Optional: Stop polling when page is closed
 window.addEventListener("beforeunload", stopPolling);
